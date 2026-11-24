@@ -1,0 +1,47 @@
+name: Validate
+on: [push, pull_request]
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run demo
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: architect
+          POSTGRES_PASSWORD: ci-test-password
+          POSTGRES_DB: architect
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U architect"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: node --test tests/postgres.test.js
+        env:
+          TEST_POSTGRES_URL: postgresql://architect:ci-test-password@localhost:5432/architect
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t cloudskills:test .

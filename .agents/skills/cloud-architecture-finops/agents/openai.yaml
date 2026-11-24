@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cloud Architecture & FinOps Analyst"
+  short_description: "Azure architecture, cost drivers, and evidence reports"
+  default_prompt: "Use $cloud-architecture-finops to analyze the Azure subscription I name, using my existing authenticated session, and save the report and technical deep dives into its working folder."

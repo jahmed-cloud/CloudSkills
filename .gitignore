@@ -1,0 +1,12 @@
+node_modules/
+.env
+*.db
+*.db-*
+coverage/
+reports/*
+!reports/.gitkeep
+knowledge/organization/*
+!knowledge/organization/.gitkeep
+knowledge/cache/*
+!knowledge/cache/.gitkeep
+

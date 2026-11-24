@@ -1,0 +1,4 @@
+[
+  {"id":"ORG-NET-004","title":"Key Vault uses private networking","resourceType":"Microsoft.KeyVault/vaults","path":"properties.publicNetworkAccess","operator":"equals","expected":"Disabled","severity":"high","source":"Example organization baseline v1; replace with approved policy"},
+  {"id":"ORG-IDENTITY-009","title":"Key Vault uses RBAC","resourceType":"Microsoft.KeyVault/vaults","path":"properties.enableRbacAuthorization","operator":"equals","expected":true,"severity":"medium","source":"Example organization baseline v1; replace with approved policy"}
+]

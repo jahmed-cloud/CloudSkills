@@ -1,0 +1,30 @@
+{
+  "name": "cloudskills",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Provider-agnostic cloud architecture evidence, policy knowledge, and MCP tools with an Azure adapter",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "start:http": "node src/server.js --transport http",
+    "audit": "node src/cli/index.js audit",
+    "demo": "node src/cli/index.js audit --input examples/subscription.json --output reports/demo",
+    "test": "node --test",
+    "check": "node scripts/check.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.13.0",
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "express": "^5.1.0",
+    "pg": "^8.16.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.6",
+    "typescript": "~5.9.3"
+  }
+}

@@ -1,0 +1,26 @@
+# Retain the pre-rename project identity so existing organization volumes stay attached.
+name: ${COMPOSE_PROJECT_NAME:-azureskills}
+services:
+  architect:
+    build: .
+    image: cloudskills:local
+    init: true
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:?Set a random MCP_AUTH_TOKEN of at least 32 characters}
+      MCP_ALLOWED_HOSTS: ${MCP_ALLOWED_HOSTS:-127.0.0.1:3000,localhost:3000}
+      AZURE_SUBSCRIPTIONS: ${AZURE_SUBSCRIPTIONS:-}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
+      POLICY_DATABASE: /app/knowledge/organization/policies.db
+    volumes:
+      - organization:/app/knowledge/organization
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+volumes:
+  organization:

@@ -1,0 +1,14 @@
+{
+  "servers": {
+    "cloudskills": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/src/server.js"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "AZURE_SUBSCRIPTIONS": "REPLACE_WITH_YOUR_SUBSCRIPTION_UUID",
+        "POLICY_DATABASE": "${workspaceFolder}/knowledge/organization/policies.db"
+      }
+    }
+  }
+}

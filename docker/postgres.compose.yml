@@ -1,0 +1,22 @@
+services:
+  architect:
+    environment:
+      POLICY_DATABASE: postgresql://architect:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/architect
+    depends_on:
+      postgres:
+        condition: service_healthy
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: architect
+      POSTGRES_DB: architect
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - policies:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U architect"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  policies:

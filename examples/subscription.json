@@ -1,0 +1,44 @@
+{
+  "source": "fixture",
+  "collectedAt": "2026-09-24T00:00:00.000Z",
+  "coverage": ["resources"],
+  "limitations": ["Synthetic demonstration data; does not describe a real tenant."],
+  "resources": [
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/demo/providers/Microsoft.KeyVault/vaults/prod-kv-001",
+      "name": "prod-kv-001", "type": "Microsoft.KeyVault/vaults", "location": "eastus",
+      "tags": {"environment": "prod", "owner": "platform"},
+      "properties": {"publicNetworkAccess": "Enabled", "enableRbacAuthorization": false, "enablePurgeProtection": true}
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/demo/providers/Microsoft.Storage/storageAccounts/prodstorage001",
+      "name": "prodstorage001", "type": "Microsoft.Storage/storageAccounts", "location": "eastus",
+      "tags": {"environment": "prod", "owner": "data", "costCenter": "CC-01"},
+      "properties": {"supportsHttpsTrafficOnly": true, "allowBlobPublicAccess": false, "minimumTlsVersion": "TLS1_2", "publicNetworkAccess": "Disabled"}
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/demo/providers/Microsoft.Network/networkSecurityGroups/workload-nsg",
+      "name": "workload-nsg", "type": "Microsoft.Network/networkSecurityGroups", "location": "eastus",
+      "tags": {"environment": "prod", "owner": "network", "costCenter": "CC-01"},
+      "properties": {"securityRules": [{"name": "allow-ssh", "properties": {"direction": "Inbound", "access": "Allow", "protocol": "Tcp", "sourceAddressPrefix": "*", "destinationPortRange": "22", "priority": 100}}]}
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/demo/providers/Microsoft.Network/virtualNetworks/workload-vnet",
+      "name": "workload-vnet", "type": "Microsoft.Network/virtualNetworks", "location": "eastus",
+      "tags": {"environment": "prod", "owner": "network", "costCenter": "CC-01"},
+      "properties": {"subnets": [{"name": "apps", "properties": {"networkSecurityGroup": {"id": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/demo/providers/Microsoft.Network/networkSecurityGroups/workload-nsg"}}}]}
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/workload-id",
+      "name": "workload-id", "type": "Microsoft.ManagedIdentity/userAssignedIdentities", "location": "eastus",
+      "tags": {"environment": "prod", "owner": "platform", "costCenter": "CC-01"}, "properties": {}
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/demo/providers/Microsoft.Web/sites/workload-app",
+      "name": "workload-app", "type": "Microsoft.Web/sites", "location": "eastus",
+      "tags": {"environment": "prod", "owner": "app", "costCenter": "CC-01"},
+      "identity": {"type": "UserAssigned", "userAssignedIdentities": {"/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/workload-id": {}}},
+      "properties": {"virtualNetworkSubnetId": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/demo/providers/Microsoft.Network/virtualNetworks/workload-vnet/subnets/apps"}
+    }
+  ]
+}

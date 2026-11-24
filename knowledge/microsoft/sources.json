@@ -1,0 +1,12 @@
+{
+  "reviewedAt": "2026-09-24",
+  "note": "Reference links, not a downloaded or complete Microsoft baseline. Verify guidance relevant to each workload.",
+  "sources": [
+    {"topic":"Resource Graph API", "url":"https://learn.microsoft.com/en-us/rest/api/azureresourcegraph/resourcegraph/resources/resources?view=rest-azureresourcegraph-resourcegraph-2024-04-01"},
+    {"topic":"Cost query API", "url":"https://learn.microsoft.com/en-us/rest/api/cost-management/query/usage?view=rest-cost-management-2025-03-01"},
+    {"topic":"Resource PIM instances", "url":"https://learn.microsoft.com/en-us/rest/api/authorization/role-assignment-schedule-instances/list-for-scope?view=rest-authorization-2020-10-01"},
+    {"topic":"Well-Architected Framework", "url":"https://learn.microsoft.com/azure/well-architected/"},
+    {"topic":"Cloud Adoption Framework", "url":"https://learn.microsoft.com/azure/cloud-adoption-framework/"},
+    {"topic":"Azure Policy rules", "url":"https://learn.microsoft.com/azure/governance/policy/concepts/definition-structure-policy-rule"}
+  ]
+}
