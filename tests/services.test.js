@@ -81,6 +81,6 @@ test('container examples keep private ingress/API access and explicit scaling bo
 });
 
 test('service input validation rejects unsupported kinds and expression injection', () => {
-  assert.equal(terraformOptions.shape.kind.removeDefault().options.length, Object.keys(kinds).length);
+  assert.equal(terraformOptions.shape.kind.unwrap().options.length, Object.keys(kinds).length);
   for (const input of [{ name: 'bad${var.secret}' }, { name: 'demoresource', location: '${var.region}' }, { name: 'demoresource', kind: 'aws-vm' }]) assert.throws(() => terraformGenerate(input));
 });

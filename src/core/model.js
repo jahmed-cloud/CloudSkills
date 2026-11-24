@@ -5,10 +5,10 @@ export const resourceSchema = z.object({
   id: z.string().min(1), name: z.string().min(1), type: z.string().min(1),
   accountId: z.string().optional(), region: z.string().optional(), group: z.string().optional(),
   kind: z.enum(['compute', 'network', 'identity', 'data', 'application', 'other']).optional(),
-  tags: z.record(z.string()).default({}), properties: z.record(z.unknown()).default({}),
-  attributes: z.record(z.unknown()).optional(),
+  tags: z.record(z.string(), z.string()).default({}), properties: z.record(z.string(), z.unknown()).default({}),
+  attributes: z.record(z.string(), z.unknown()).optional(),
   references: z.array(z.object({ id: z.string(), path: z.string() })).optional(),
-}).passthrough(); // Retain provider extensions for compatibility; core never interprets them.
+}).loose(); // Retain provider extensions for compatibility; core never interprets them.
 export const snapshotSchema = z.object({
   provider: z.string().min(1).default('unknown'),
   resources: z.array(resourceSchema).max(50000), collectedAt: z.string().datetime().optional(),

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { snapshotSchema } from '../model.js';
-export const subscriptions = z.array(z.string().uuid()).min(1).max(100);
+export const subscriptions = z.array(z.guid()).min(1).max(100);
 export const snapshotInput = {
   snapshot: snapshotSchema.optional(), provider: z.string().optional(),
   scope: z.object({ accountIds: z.array(z.string().min(1)).min(1).max(100) }).optional(),

@@ -7,7 +7,7 @@ import { toolFactory } from './tool.js';
 
 export function registerTools(server, { registry, store }) {
   const tool = toolFactory(server);
-  tool('learn_organization_policy', 'Persist normalized controls or translate native definitions with the selected provider. Unsupported definitions are reported.', { provider: z.string().optional(), controls: z.array(controlSchema).max(2000).optional(), definitions: z.array(z.record(z.unknown())).max(2000).optional() }, async a => {
+  tool('learn_organization_policy', 'Persist normalized controls or translate native definitions with the selected provider. Unsupported definitions are reported.', { provider: z.string().optional(), controls: z.array(controlSchema).max(2000).optional(), definitions: z.array(z.record(z.string(), z.unknown())).max(2000).optional() }, async a => {
     if (Boolean(a.controls) === Boolean(a.definitions)) throw new Error('Choose exactly one of controls or definitions');
     const result = a.definitions ? registry.get(a.provider).importPolicies(a.definitions) : { controls: a.controls, unsupported: [] };
     return { ...await store.learn(result.controls), unsupported: result.unsupported };
