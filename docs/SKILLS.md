@@ -10,7 +10,7 @@ For client-specific installation, see [AI client setup](CLIENTS.md). Current Cur
 |---|---|
 | azure-architect | Coordinate an evidence-based Azure subscription architecture assessment |
 | cloud-architecture-finops | Combine architecture findings, gaps, cost drivers, alternatives and technical evidence folders |
-| cloud-service-builder | Capture service requirements and organization controls, compare alternatives and produce supported reviewable Azure Terraform examples |
+| cloud-build | Capture service requirements and organization controls, compare alternatives and produce supported reviewable Azure Terraform examples |
 | architecture-review | Assess resources and architectural trade-offs |
 | security-audit | Review supported security controls and missing evidence |
 | identity-review | Combine resource identity, Azure RBAC and resource PIM evidence |
@@ -35,11 +35,13 @@ See [skill instructions](../.agents/skills/cloud-architecture-finops/SKILL.md) a
 
 ## Service creation guidance
 
+Start with the [Cloud Service Builder usage guide](SERVICE-BUILDER.md) for client invocation commands, policy access, and prompts for Terraform and PowerShell.
+
 Ask for a service by describing its purpose, region, workload, availability, networking, identity, budget and organization constraints. The builder workflow gathers missing requirements, searches approved controls, explains alternatives and generates supported Terraform JSON for review. Supported generation targets are Storage, Key Vault, virtual network, App Service, virtual machine, SQL Database, PostgreSQL Flexible Server, AKS and Container Apps. Generated content includes required variables, deployment prerequisites, source references and an explicit unevaluated policy status. Unsupported services require a separately reviewed design/implementation; no AWS/GCP generator is implemented.
 
 Example:
 
-> Use the cloud-service-builder skill to design a private Azure Storage service for application exports in West Europe. Apply our imported organization controls, explain costs and networking prerequisites, and produce Terraform for review.
+> Use the cloud-build skill to design a private Azure Storage service for application exports in West Europe. Apply our imported organization controls, explain costs and networking prerequisites, and produce Terraform for review.
 
 Static checks and local baseline comparison use the evidence supported by each tool. They do not establish full assigned-policy compliance or deployment readiness. There are no plan/apply/deploy MCP tools. Deployment needs its own authorized workflow and cloud permissions.
 

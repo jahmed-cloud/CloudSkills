@@ -4,13 +4,19 @@ CloudSkills provides two independently configured capabilities: **skills** descr
 
 The same 14 workflow folders and 22 MCP tools can be reused across compatible clients. Compatibility below follows the linked official documentation checked on **2026-11-24**; a live session with each client and your tenant is still required to verify the complete setup. Azure is the implemented cloud provider; AWS/GCP are planned.
 
+For an infrastructure design interview, use the following prompt in the application workspace:
+
+> Use cloud-build. Read this application and its deployment files. Grill me one decision at a time, explain what you recommend and why, and keep the design document updated. Once the design has enough confirmed inputs, build the Terraform and validate it.
+
+The agent starts or updates a Markdown design document in the application workspace. Give it that document to resume in another session. For invocation commands, Azure Policy access, credential storage, and Terraform or PowerShell prompts, see the [Cloud Service Builder usage guide](SERVICE-BUILDER.md).
+
 ## Choose your client
 
 | Client | Skills in this repository | Local MCP configuration | Notes |
 |---|---|---|---|
 | GitHub Copilot in VS Code | `.agents/skills/` is supported | `.vscode/mcp.json`, with top-level `servers` | Use an agent session and enable the server/tools. See [Copilot guide](COPILOT.md). |
 | GitHub Copilot in Visual Studio | `.agents/skills/` is supported in versions with Agent Skills | Add through the tool picker, or `.vs/mcp.json` with `servers` | MCP: VS 2022 17.14+ / VS 2026. Native skills: VS 2026 18.5+. |
-| Claude Code | Copy desired complete folders to `.claude/skills/` | `claude mcp add` or project `.mcp.json` with `mcpServers` | Invoke `/cloud-service-builder` or name the skill in chat. |
+| Claude Code | Copy desired complete folders to `.claude/skills/` | `claude mcp add` or project `.mcp.json` with `mcpServers` | Invoke `/cloud-build` or name the skill in chat. |
 | Cursor | `.agents/skills/` is supported | `.cursor/mcp.json` with `mcpServers` | Enable the server in Customize/MCP and select the skill through `/` or name it. |
 | Another MCP/Agent Skills client | Follow that client's documented discovery path | Its STDIO or Streamable HTTP configuration | MCP support alone does not establish automatic skill discovery. |
 
@@ -77,7 +83,7 @@ Get-ChildItem -LiteralPath '.agents/skills' -Directory | ForEach-Object {
 }
 ```
 
-Run it only for a destination you intend to populate. You can instead copy individual desired folders to `.claude/skills/<name>/` or `~/.claude/skills/<name>/`. Refresh local copies when the source changes; avoid editing two versions independently. Start Claude Code in that project and use `/cloud-service-builder` or name another workflow. [Claude Code skill locations and invocation](https://code.claude.com/docs/en/skills).
+Run it only for a destination you intend to populate. You can instead copy individual desired folders to `.claude/skills/<name>/` or `~/.claude/skills/<name>/`. Refresh local copies when the source changes; avoid editing two versions independently. Start Claude Code in that project and use `/cloud-build` or name another workflow. [Claude Code skill locations and invocation](https://code.claude.com/docs/en/skills).
 
 Register STDIO from the intended project directory. The following is one command; the `--env` pairs precede `--transport` to avoid the server name being parsed as an environment value:
 
@@ -125,7 +131,7 @@ Then use an explicit live UUID:
 
 For service design:
 
-> Use cloud-service-builder to design a private Azure API backed by PostgreSQL. Gather missing requirements, check our approved controls, compare suitable designs, and generate Terraform and an implementation checklist for review.
+> Use cloud-build to design a private Azure API backed by PostgreSQL. Gather missing requirements, check our approved controls, compare suitable designs, and generate Terraform and an implementation checklist for review.
 
 For policy ingestion:
 

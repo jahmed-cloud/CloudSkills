@@ -1,11 +1,15 @@
 ---
-name: cloud-service-builder
+name: cloud-build
 description: Help users design and build Azure services from requirements, checking organization controls and generating reviewable Terraform for web, network, storage, identity, compute, database, AKS and container workloads.
 ---
 
 # Cloud Service Builder
 
 Turn a user's workload requirements into a concrete service design, infrastructure code and an implementation checklist. Azure is the currently implemented provider. AWS and GCP adapters are planned; do not invent working tools for them.
+
+## Guided design interview
+
+When the user asks to be grilled or wants requirements captured in a design document, follow [the infrastructure design interview](references/design-interview.md). Ask one decision at a time, record each answer, and use confirmed requirements to carry the work into implementation.
 
 ## Establish the requirements
 
@@ -25,13 +29,17 @@ Translate applicable controls into explicit design requirements: regions, taggin
 
 ## Generate the service implementation
 
-Use `terraform_generate` for the supported Azure workload kind: Storage, Key Vault, virtual networking, App Service, Linux virtual machine, Azure SQL, PostgreSQL, AKS or Container Apps. Inspect the tool's current schema rather than assuming a kind is available. Select services based on requirements; support for a service is not a recommendation to use it in every workload.
+For Terraform JSON, use `terraform_generate` for the supported Azure workload kind: Storage, Key Vault, virtual networking, App Service, Linux virtual machine, Azure SQL, PostgreSQL, AKS or Container Apps. Inspect the tool's current schema rather than assuming a kind is available. Select services based on requirements; support for a service is not a recommendation to use it in every workload.
 
-Generated templates are starting points. Fill the user's approved names, tags, region, subscription, sizing, networking and identity inputs; preserve required variables for values not provided. Templates for several services are separate Terraform root modules and must be integrated deliberately rather than concatenated with duplicate resource names and provider blocks. Never hardcode passwords, access tokens, private keys or connection secrets.
+If the user requests HCL (`.tf`), use their existing Terraform conventions and write or adapt the HCL in the workspace. Generated templates are starting points. Fill the user's approved names, tags, region, subscription, sizing, networking and identity inputs; preserve required variables for values not provided. Templates for several services are separate Terraform root modules and must be integrated deliberately rather than concatenated with duplicate resource names and provider blocks. Never hardcode passwords, access tokens, private keys or connection secrets.
 
 Supply required dependencies such as private endpoint/DNS connectivity, delegated subnets, egress, role assignments, image access, backups and monitoring when they are in scope. Identify what each example includes and what still needs implementation. Use current official AzureRM resource documentation to verify arguments and region/SKU/version support before claiming deployment readiness.
 
 Use `terraform_analyze` or `terraform_security_scan` for supported static checks and read their coverage limitations. If Terraform tooling is available, validate formatting and configuration locally; provider initialization may need registry access. Review a plan only in an authorized environment. Include recurring-cost assumptions, capacity drivers and a cost verification step without inventing a pricing quote.
+
+### PowerShell output
+
+When asked for Azure PowerShell, write a parameterized `.ps1` in the application workspace using the client's file tools. State the required `Az` modules and authentication context. Require the target subscription and check the active context before Azure operations. For scripts that change resources, check for existing resources and protect each write with `SupportsShouldProcess` and `$PSCmdlet.ShouldProcess` so `-WhatIf` works. Run syntax checks without invoking the script. Keep Terraform as the owner of any resources it manages and use PowerShell for read-only verification of those resources unless the user provides a different ownership plan.
 
 ## Save a concrete result
 

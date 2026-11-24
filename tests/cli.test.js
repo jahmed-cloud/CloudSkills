@@ -8,13 +8,19 @@ import { join } from 'node:path';
 test('CLI generates consistent report bundle and CI failure exit status', async () => {
   const output = await mkdtemp(join(tmpdir(), 'cloudskills-test-'));
   try {
-    const args = ['src/cli/index.js', 'audit', '--input', 'examples/subscription.json', '--policy', 'examples/organization-controls.json', '--output', output, '--fail-on-findings'];
+    const args = ['src/cli/index.js', 'audit', '--input', 'examples/subscription.json', '--policy', 'examples/organization-controls.json', '--output', output, '--assessment', '--fail-on-findings'];
     const run = spawnSync(process.execPath, args, { encoding: 'utf8' });
     assert.equal(run.status, 2, run.stderr);
     const report = JSON.parse(await readFile(join(output, 'report.json'), 'utf8')); assert.equal(report.summary.fail, 4);
     const manifest = JSON.parse(await readFile(join(output, 'manifest.json'), 'utf8')); assert.equal(manifest.snapshotHash, report.snapshotHash);
     assert.equal(manifest.provider, 'azure'); assert.equal(report.provider, 'azure');
     assert.equal(JSON.parse(run.stdout).provider, 'azure');
+    const assessment = JSON.parse(await readFile(join(output, 'assessment.json'), 'utf8'));
+    assert.equal(assessment.snapshotHash, report.snapshotHash);
+    assert.equal(assessment.liveEvidenceStatus, 'offline');
+    assert.equal(assessment.organizationBaseline.status, 'compared');
+    assert.ok(manifest.files.includes('assessment.md'));
+    assert.match(await readFile(join(output, 'assessment.md'), 'utf8'), /local snapshot/);
     assert.ok((await readFile(join(output, 'network.mmd'), 'utf8')).includes('-->'));
     const repeated = spawnSync(process.execPath, args, { encoding: 'utf8' }); assert.equal(repeated.status, 1); assert.ok(repeated.stderr.includes('EEXIST'));
   } finally { await rm(output, { recursive: true, force: true }); }

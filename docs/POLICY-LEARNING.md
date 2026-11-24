@@ -9,6 +9,8 @@ CloudSkills can use your organization's approved Azure controls, but installing 
 
 Neither path by itself explains every management-group assignment, initiative, exemption or business exception. Current collectors do not resolve that entire hierarchy. State reads do not automatically import definitions into the local store.
 
+For an example of requesting live policy results from an AI client and how the server handles its Azure token, see the [Cloud Service Builder usage guide](SERVICE-BUILDER.md#read-the-current-azure-policy-results).
+
 ## Import approved controls
 
 Learning is deterministic ingestion and retrieval, not model training. Knowledge is stored in `knowledge/organization/policies.db` unless `POLICY_DATABASE` selects another SQLite path or PostgreSQL URL. The server sends clients only returned tool results; an AI client's own handling of those results depends on its configuration and organization settings.

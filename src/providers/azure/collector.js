@@ -12,7 +12,7 @@ export class AzureReader {
   }
   async request(path, body) {
     // Only explicitly implemented read/query endpoints can reach ARM.
-    const permitted = path === GRAPH_PATH || /^\/subscriptions\/[0-9a-f-]+\/providers\/Microsoft\.(Authorization\/(roleAssignments|roleAssignmentScheduleInstances|roleEligibilityScheduleInstances)|CostManagement\/query|PolicyInsights\/policyStates\/latest\/queryResults|Authorization\/policyDefinitions)\?/.test(path);
+    const permitted = path === GRAPH_PATH || /^\/subscriptions\/[0-9a-f-]+\/providers\/Microsoft\.(Authorization\/(roleAssignments|roleAssignmentScheduleInstances|roleEligibilityScheduleInstances|policyDefinitions)|CostManagement\/query|PolicyInsights\/policyStates\/latest\/queryResults|Advisor\/recommendations)\?/.test(path);
     if (!permitted) throw new Error('Azure endpoint is not a supported read operation');
     this.credential ??= azureCredential();
     const token = await (await this.credential).getToken('https://management.azure.com/.default');
@@ -30,15 +30,18 @@ export class AzureReader {
         await this.delay(Math.min(Number.isFinite(retry) && retry > 0 ? retry : 500 * 2 ** attempt, 10000));
         continue;
       }
-      if (!response.ok) throw new Error(`Azure read failed (HTTP ${response.status}); verify the subscription and read permissions`);
-      return response.json();
+      if (!response.ok) {
+        await response.body?.cancel();
+        throw new Error(`Azure read failed (HTTP ${response.status}); verify the subscription and read permissions`);
+      }
+      return response.status === 204 ? null : response.json();
     }
   }
   async graph(subscriptions, query, { limit = 1000, skipToken } = {}) {
     const ids = allowedSubscriptions(subscriptions, this.subscriptions);
     if (!Number.isSafeInteger(limit) || limit < 1 || limit > 1000 || typeof query !== 'string' || !query.trim() || query.length > 20000 || (skipToken !== undefined && (typeof skipToken !== 'string' || !skipToken))) throw new Error('Invalid Azure Resource Graph query or pagination options');
     const page = await this.request(GRAPH_PATH, { subscriptions: ids, query, options: { resultFormat: 'objectArray', $top: limit, ...(skipToken ? { $skipToken: skipToken } : {}) } });
-    if (!Array.isArray(page.data) || (page.$skipToken !== undefined && typeof page.$skipToken !== 'string')) throw new Error('Azure Resource Graph returned an invalid page');
+    if (!Array.isArray(page?.data) || (page.$skipToken !== undefined && typeof page.$skipToken !== 'string')) throw new Error('Azure Resource Graph returned an invalid page');
     return page;
   }
   async *graphPages(subscriptions, query) {
@@ -86,6 +89,7 @@ export class AzureReader {
       pimActive: ['Microsoft.Authorization/roleAssignmentScheduleInstances?api-version=2020-10-01'],
       pimEligible: ['Microsoft.Authorization/roleEligibilityScheduleInstances?api-version=2020-10-01'],
       definitions: ['Microsoft.Authorization/policyDefinitions?api-version=2023-04-01'],
+      advisor: ['Microsoft.Advisor/recommendations?api-version=2025-01-01'],
       policyStates: ['Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2019-10-01', {}],
       costs: ['Microsoft.CostManagement/query?api-version=2025-03-01', { type: 'ActualCost', timeframe: 'MonthToDate', dataset: { granularity: 'None', aggregation: { totalCost: { name: 'PreTaxCost', function: 'Sum' } }, grouping: [{ type: 'Dimension', name: 'ResourceId' }] } }],
     };
@@ -97,12 +101,15 @@ export class AzureReader {
       if (seen.has(path) || seen.size >= this.maxPages) throw new Error('Azure pagination exceeded its safe limit');
       seen.add(path);
       const result = await this.request(path, body);
-      if (result.properties?.rows) {
+      if (result === null && kind === 'costs' && seen.size === 1) return { columns: [], rows: [], noData: true };
+      if (kind === 'costs') {
+        if (!Array.isArray(result?.properties?.rows) || !Array.isArray(result.properties.columns)) throw new Error('Azure cost query returned an invalid page');
         if (columns && JSON.stringify(columns) !== JSON.stringify(result.properties.columns)) throw new Error('Azure cost columns changed during pagination');
-        rows.push(...result.properties.rows); columns = result.properties.columns;
+        for (const row of result.properties.rows) rows.push(row);
+        columns = result.properties.columns;
       } else {
-        if (!Array.isArray(result.value)) throw new Error('Azure read returned an invalid list');
-        rows.push(...result.value);
+        if (!Array.isArray(result?.value)) throw new Error('Azure read returned an invalid list');
+        for (const row of result.value) rows.push(row);
       }
       if (rows.length > 100000) throw new Error('Azure list exceeds 100,000 records; narrow the scope');
       const next = result.nextLink || result['@odata.nextLink'] || result.properties?.nextLink;

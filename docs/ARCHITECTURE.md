@@ -77,7 +77,7 @@ HTML reports use an inline stylesheet, clear evidence/status presentation, respo
 - Cost data is actual month-to-date, grouped by currency, with top resources. There are no utilization or savings estimates.
 - Azure Policy state reads use Azure's evaluated states. Local native-definition imports support a narrow subset and do not resolve full assignments, initiatives, exemptions or scope applicability.
 - Terraform accepts `.tf.json` or `terraform show -json`, not raw HCL. It does not run providers or load modules from disk. Nine Azure service template kinds provide requirements/checklists and an explicit unevaluated policy status; they are starting configurations requiring workload-specific inputs and review.
-- CLI reports cover inventory checks. Separate live RBAC, PIM, cost and policy-state results are not aggregated into that report automatically.
+- CLI HTML reports cover inventory checks. The opt-in `--assessment` flow produces a Markdown brief and JSON that add subscription-level policy states, RBAC, resource PIM, month-to-date cost and cached Advisor recommendations. Supplemental sources report their own status and preserve the partial result when an endpoint fails. Inventory remains required. Offline snapshots produce the same brief with live evidence marked uncollected.
 
 There are no deployment/remediation tools. AWS and GCP collection, checks and credentials are planned future work, not enabled features.
 

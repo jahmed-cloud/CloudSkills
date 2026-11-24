@@ -1,4 +1,0 @@
-interface:
-  display_name: "Cloud Service Builder"
-  short_description: "Design Azure services and generate reviewed infrastructure"
-  default_prompt: "Use $cloud-service-builder to gather my requirements, check organization controls, and generate the Azure service design, Terraform and implementation checklist in my working folder."

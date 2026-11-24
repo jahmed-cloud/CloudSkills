@@ -59,7 +59,7 @@ For approved organization controls:
 
 For requirements-led service design:
 
-> Use cloud-service-builder to design an Azure App Service for our internal API. Gather the workload, availability, network, identity, budget and regional requirements, check our imported organization controls, compare suitable architectures, and produce supported Terraform JSON for review.
+> Use cloud-build to design an Azure App Service for our internal API. Gather the workload, availability, network, identity, budget and regional requirements, check our imported organization controls, compare suitable architectures, and produce supported Terraform JSON for review.
 
 The agent orchestrates tools and explains results. The server performs deterministic reads/checks and local policy persistence. No tool deploys services, assigns policies or remediates findings.
 

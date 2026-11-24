@@ -19,7 +19,7 @@ services/<workload>/<run>/
 
 `policy-review.md` links applicable organization control IDs and sources to specific configuration decisions. Record policy definitions that cannot be evaluated, missing assignment/exemption context and any policy conflicts. Generated defaults and sample tags are not organization approval. Do not label an implementation compliant merely because supported static checks passed.
 
-`infrastructure/` contains one coherent Terraform root module per independently deployable component. Document variables, which are required, expected formats, secret-handling guidance and environment-specific values. Do not store real credentials or secret-bearing state. Plans/state can contain secrets and should remain in the authorized local workflow.
+`infrastructure/` contains one coherent Terraform root module per independently deployable component. When the requested implementation is PowerShell, save a parameterized `.ps1` with its required modules, Azure context, and validation notes instead. Document variables, which are required, expected formats, secret-handling guidance and environment-specific values. Do not store real credentials or secret-bearing state. Plans/state can contain secrets and should remain in the authorized local workflow.
 
 `validation.md` identifies the exact checks run, their outputs, scope and failures. Separate JSON/static checks, provider-backed validation, plan review and post-deployment verification. Unrun checks are pending, not passes. Record provider versions and current official reference links used to verify the resource schema.
 

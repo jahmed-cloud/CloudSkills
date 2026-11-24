@@ -38,7 +38,13 @@ $env:AZURE_SUBSCRIPTIONS = "your-subscription-uuid"
 npm run audit -- --provider azure --subscription $env:AZURE_SUBSCRIPTIONS --output reports/live-review
 ```
 
-Azure is the default for compatibility; `--provider aws` and `--provider gcp` fail as unsupported. The CLI report covers inventory configuration checks. Live RBAC, resource PIM, Policy Insights and cost queries remain separate MCP tools and are not automatically included in its executive report.
+Azure is the default for compatibility. The standard CLI report covers inventory configuration checks. Add `--assessment` to create a linked Markdown brief and JSON evidence bundle with Azure Policy states, RBAC, resource PIM, month-to-date costs and cached Azure Advisor recommendations.
+
+```powershell
+npm run audit -- --subscription $env:AZURE_SUBSCRIPTIONS --assessment --output reports/live-assessment
+```
+
+Start with `assessment.md`. Each subscription has its own evidence and collection status. A denied or failed supplemental read is marked unavailable and the rest of the report is still written. Cost is grouped by currency and an empty billing response is marked unknown. Advisor data uses [Azure's cached recommendations](https://learn.microsoft.com/en-us/rest/api/advisor/recommendations/list?view=rest-advisor-2025-01-01). Check recommendation freshness and suppressions before acting.
 
 Add approved organization controls to an offline review:
 
@@ -46,9 +52,13 @@ Add approved organization controls to an offline review:
 npm run audit -- --input examples/subscription.json --policy examples/organization-controls.json --output reports/with-policy
 ```
 
-The comparison is saved as `organization-policy.json`. `--fail-on-findings` returns 2 for observed built-in or organization failures; input/runtime errors return 1. Missing evidence is unknown.
+The comparison is saved as `organization-policy.json`. Combine `--assessment` with `--policy` to include the comparison summary in the brief. A snapshot-based assessment works offline and labels live evidence as uncollected. `--fail-on-findings` returns 2 for built-in or local organization control failures. Input errors and failed inventory collection return 1. Supplemental evidence status is included in the JSON output and does not change those exit codes.
 
 ## How users interact
+
+**Windows and VS Code Copilot** · Double-click [`Start-CloudBuild.cmd`](Start-CloudBuild.cmd) in your local CloudSkills checkout and select your application folder. It installs `/cloud-build` for that project and opens the infrastructure interview in Copilot. [Setup and manual alternatives](docs/SERVICE-BUILDER.md)
+
+To design new Azure infrastructure, invoke `cloud-build` in your application workspace. The guided interview records decisions in a Markdown document and can produce Terraform or an Azure PowerShell script for review. [Invocation commands and examples](docs/SERVICE-BUILDER.md)
 
 Use the CLI for repeatable reports, or connect an MCP client and ask in natural language:
 

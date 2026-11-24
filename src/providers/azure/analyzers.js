@@ -81,15 +81,48 @@ export function pimReview(active, eligible) {
 }
 /** @returns {Omit<import('../../core/interfaces/index.ts').ICloudCostResult, 'provider'>} */
 export function costAnalysis(data) {
+  const limitations = ['Month-to-date actual costs may arrive late; no savings estimate or utilization conclusion is inferred. Different currencies are not added together.'];
+  if (data.noData) return { timeframe: 'MonthToDate', dataStatus: 'no-data', totalsByCurrency: {}, topResources: [], limitations: [...limitations, 'Azure returned no billing data for the selected period. Spend is unknown.'] };
   const columns = data.columns.map(c => c.name); const currency = columns.findIndex(c => c.toLowerCase() === 'currency');
   const cost = columns.findIndex(c => ['pretaxcost', 'cost', 'costinbillingcurrency'].includes(c.toLowerCase()));
   const resource = columns.findIndex(c => c.toLowerCase() === 'resourceid');
   if (cost < 0 || currency < 0) throw new Error('Cost response requires cost and currency columns');
   /** @type {Map<string, number>} */
-  const totals = new Map(); const rows = data.rows.map(row => {
-    const amount = Number(row[cost]); if (!Number.isFinite(amount)) throw new Error('Invalid cost amount');
-    const code = String(row[currency]); totals.set(code, (totals.get(code) || 0) + amount);
-    return { resourceId: resource < 0 ? null : row[resource], amount, currency: code };
+  const totals = new Map();
+  const byCurrency = new Map();
+  for (const row of data.rows) {
+    const raw = row[cost];
+    const amount = typeof raw === 'number' || (typeof raw === 'string' && raw.trim()) ? Number(raw) : NaN;
+    if (!Number.isFinite(amount)) throw new Error('Invalid cost amount');
+    const code = typeof row[currency] === 'string' ? row[currency].trim().toUpperCase() : '';
+    if (!/^[A-Z]{3}$/.test(code)) throw new Error('Invalid cost currency');
+    const resourceId = typeof row[resource] === 'string' && row[resource].trim() ? row[resource].trim().toLowerCase() : null;
+    totals.set(code, (totals.get(code) ?? 0) + amount);
+    if (!byCurrency.has(code)) byCurrency.set(code, new Map());
+    const amounts = byCurrency.get(code);
+    amounts.set(resourceId, (amounts.get(resourceId) ?? 0) + amount);
+  }
+  const groups = [...byCurrency.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([currency, amounts]) => {
+    return [...amounts].map(([resourceId, amount]) => ({ resourceId, amount, currency }))
+      .sort((a, b) => b.amount - a.amount || (a.resourceId ?? '').localeCompare(b.resourceId ?? '')).slice(0, 20);
   });
-  return { timeframe: 'MonthToDate', totalsByCurrency: Object.fromEntries(totals), topResources: rows.sort((a, b) => b.amount - a.amount).slice(0, 20), limitations: ['Month-to-date actual costs may arrive late; no savings estimate or utilization conclusion is inferred. Different currencies are not added together.'] };
+  const topResources = [];
+  for (let rank = 0; rank < 20 && topResources.length < 20; rank++) {
+    for (const group of groups) {
+      if (group[rank]) topResources.push(group[rank]);
+      if (topResources.length === 20) break;
+    }
+  }
+  if (totals.size > 1) limitations.push('Top resources are ranked within each currency and interleaved in the 20-entry summary.');
+  if (!data.rows.length) limitations.push('Azure returned no billing rows for the selected period. Spend is unknown.');
+  return { timeframe: 'MonthToDate', dataStatus: data.rows.length ? 'available' : 'no-data', totalsByCurrency: Object.fromEntries(totals), topResources, limitations };
+}
+
+export function policyStateCounts(rows) {
+  const counts = new Map();
+  for (const row of rows) {
+    const state = row.complianceState || 'Unknown';
+    counts.set(state, (counts.get(state) ?? 0) + 1);
+  }
+  return Object.fromEntries(counts);
 }

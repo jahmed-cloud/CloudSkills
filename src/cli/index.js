@@ -3,7 +3,7 @@ import { readFile, mkdir, open, lstat, unlink } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 
 // Keep help and argument errors fast: provider, report and SDK modules load only for a run.
-const usage = 'Usage: npm run audit -- (--input snapshot.json | --subscription UUID[,UUID] | --account ID[,ID]) [--provider azure] [--output reports/audit] [--policy controls.json] [--refresh] [--fail-on-findings]';
+const usage = 'Usage: npm run audit -- (--input snapshot.json | --subscription UUID[,UUID] | --account ID[,ID]) [--provider azure] [--output reports/audit] [--policy controls.json] [--assessment] [--refresh] [--fail-on-findings]';
 
 async function writeBundle(output, artifacts) {
   await mkdir(output, { recursive: true });
@@ -38,7 +38,7 @@ try {
   const { values, positionals } = parseArgs({ allowPositionals: true, options: {
     input: { type: 'string' }, subscription: { type: 'string' }, account: { type: 'string' },
     provider: { type: 'string' }, output: { type: 'string', default: 'reports/audit' },
-    policy: { type: 'string' }, refresh: { type: 'boolean', default: false },
+    policy: { type: 'string' }, assessment: { type: 'boolean', default: false }, refresh: { type: 'boolean', default: false },
     'fail-on-findings': { type: 'boolean', default: false }, help: { type: 'boolean', default: false },
   } });
   if (values.help) {
@@ -51,7 +51,8 @@ try {
     const { registry } = createDependencies();
     const input = values.input ? JSON.parse(await readFile(values.input, 'utf8')) : undefined;
     const provider = values.input ? registry.forSnapshot(input ?? {}, values.provider) : registry.get(values.provider);
-    const snapshot = values.input ? provider.normalize(input) : await provider.getInventory({ accountIds: (values.subscription || values.account).split(',').map(id => id.trim()) }, { refresh: values.refresh });
+    const scope = values.input ? null : { accountIds: (values.subscription || values.account).split(',').map(id => id.trim()) };
+    const snapshot = values.input ? provider.normalize(input) : await provider.getInventory(scope, { refresh: values.refresh });
     const [{ htmlReport, jsonReport }, { diagram }, { compare }] = await Promise.all([
       import('../core/reporting/index.js'), import('../core/diagrams/index.js'), import('../core/policy/engine.js'),
     ]);
@@ -60,14 +61,22 @@ try {
     for (const kind of ['architecture', 'network', 'identity']) artifacts[`${kind}.mmd`] = diagram(snapshot, kind).mermaid;
     let policyResult;
     if (values.policy) { policyResult = compare(snapshot, JSON.parse(await readFile(values.policy, 'utf8'))); artifacts['organization-policy.json'] = JSON.stringify(policyResult, null, 2); }
+    let assessment;
+    if (values.assessment) {
+      const { collectAssessmentEvidence, assessmentBundle, assessmentMarkdown } = await import('../providers/azure/assessment.js');
+      const evidence = scope ? await collectAssessmentEvidence(provider, scope.accountIds) : [];
+      assessment = assessmentBundle(report, policyResult, evidence);
+      artifacts['assessment.json'] = JSON.stringify(assessment, null, 2);
+      artifacts['assessment.md'] = assessmentMarkdown(assessment, report.findings);
+    }
     // Terraform examples remain an Azure capability, outside the generic report pipeline.
     if (provider.id === 'azure') {
       const { terraformGenerate } = await import('../providers/azure/terraform.js');
       for (const kind of ['storage', 'keyvault']) artifacts[`terraform/${kind}/main.tf.json`] = terraformGenerate({ name: 'cloudskillsexample', kind }).content;
     }
-    artifacts['manifest.json'] = JSON.stringify({ provider: provider.id, snapshotHash: snapshot.contentHash, generatedAt: new Date().toISOString(), files: Object.keys(artifacts), limitations: ['Terraform examples need workload-specific configuration and validation before use.', 'CLI report contains inventory checks. Live RBAC/PIM/cost/Policy states are separate MCP tools and are not included.'] }, null, 2);
+    artifacts['manifest.json'] = JSON.stringify({ provider: provider.id, snapshotHash: snapshot.contentHash, generatedAt: new Date().toISOString(), files: Object.keys(artifacts), limitations: ['Terraform examples need workload-specific configuration and validation before use.', assessment ? 'The HTML report contains inventory checks. Open assessment.md for supplemental coverage and findings.' : 'The HTML report covers inventory configuration. Use --assessment to collect supplemental Azure evidence.'] }, null, 2);
     await writeBundle(output, artifacts);
-    console.log(JSON.stringify({ output, provider: provider.id, ...report.summary, snapshotHash: snapshot.contentHash }, null, 2));
+    console.log(JSON.stringify({ output, provider: provider.id, ...report.summary, snapshotHash: snapshot.contentHash, ...(assessment && { assessment: assessment.liveEvidenceStatus }) }, null, 2));
     if (values['fail-on-findings'] && (report.summary.fail || policyResult?.results.some(r => r.status === 'fail'))) process.exitCode = 2;
   }
 } catch (error) { console.error(error.message); process.exitCode = 1; }

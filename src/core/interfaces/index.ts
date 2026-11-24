@@ -20,6 +20,7 @@ export interface ICloudInventory {
 }
 export interface ICloudCostResult {
   provider: string; timeframe: string; totalsByCurrency: Record<string, number>;
+  dataStatus?: 'available' | 'no-data';
   topResources: Array<{ resourceId: string | null; amount: number; currency: string }>;
   limitations: string[];
 }
