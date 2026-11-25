@@ -60,7 +60,15 @@ The comparison is saved as `organization-policy.json`. Combine `--assessment` wi
 
 To design new Azure infrastructure, invoke `cloud-build` in your application workspace. The guided interview records decisions in a Markdown document and can produce Terraform or an Azure PowerShell script for review. [Invocation commands and examples](docs/SERVICE-BUILDER.md)
 
-Use the CLI for repeatable reports, or connect an MCP client and ask in natural language:
+Use the CLI for repeatable reports, or connect an MCP client and talk to it in chat. To start from what you want to build, with policy checked first, use the `cloudskills` skill:
+
+```text
+/cloudskills help me create a web app
+```
+
+It reads your Azure Policy assignments, imported organization controls and the matching CloudSkills template, then asks you one design question at a time, each with its recommendation and the evidence behind it. Every decision is recorded under `services/<workload>/<run>/`, and `cloud-build` then generates the Terraform from those decisions. [Chat with CloudSkills](docs/SKILLS.md#chat-with-cloudskills) shows a full exchange.
+
+For an assessment, name the workflow in natural language:
 
 > Use the cloud-architecture-finops skill to review subscription contoso-prod. Check Azure's evaluated policy compliance and our imported organization controls, explain cost evidence and gaps, and save the report with supporting evidence in the dedicated working folder.
 
@@ -152,7 +160,7 @@ src/
 
 Core reporting and storage consume normalized data and have no Azure SDK dependency. Azure native behavior stays in its adapter. Existing import/entry paths are retained as compatibility shims. Future providers must implement the contracts, normalize their references and register their tools; adding placeholders does not enable collection.
 
-The repository contains 14 agent workflows in `.agents/skills/`. Supported Copilot and Cursor versions discover them there; Claude Code uses a documented `.claude/skills/` installation step. [AI client setup](docs/CLIENTS.md), [Skills](docs/SKILLS.md), [Copilot](docs/COPILOT.md), [Architecture](docs/ARCHITECTURE.md), [MCP](docs/MCP.md), [Policy learning](docs/POLICY-LEARNING.md), [Security](docs/SECURITY.md), [Validation](docs/VALIDATION.md).
+The repository contains 15 agent workflows in `.agents/skills/`. Supported Copilot and Cursor versions discover them there; Claude Code uses a documented `.claude/skills/` installation step. [AI client setup](docs/CLIENTS.md), [Skills](docs/SKILLS.md), [Copilot](docs/COPILOT.md), [Architecture](docs/ARCHITECTURE.md), [MCP](docs/MCP.md), [Policy learning](docs/POLICY-LEARNING.md), [Security](docs/SECURITY.md), [Validation](docs/VALIDATION.md).
 
 Generated tenant reports, policy databases, credentials and dependency folders are ignored by Git. Review organizational evidence before sharing it through any external AI client. No deployment, remediation or deletion tools exist.
 

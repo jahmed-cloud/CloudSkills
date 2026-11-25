@@ -1,0 +1,4 @@
+interface:
+  display_name: "CloudSkills"
+  short_description: "Design an Azure service by interview, grounded in policy and templates"
+  default_prompt: "Use $cloudskills to help me create a web app: read our Azure Policy, organization controls and the template first, then question me one decision at a time and record the decisions."
